@@ -43,3 +43,7 @@ class Board:
                 board[y][x] = Square(x, y, color, piece)
 
         return board
+
+    def __getitem__(self, pos):
+        row, col = pos
+        return self.board[row][col]
