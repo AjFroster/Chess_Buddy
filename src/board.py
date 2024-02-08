@@ -43,6 +43,15 @@ class Board:
                 board[y][x] = Square(x, y, color, piece)
 
         return board
+    
+    def is_valid_position(self, row, col):
+        return 0 <= row < 8 and 0 <= col < 8
+    
+    def get_piece_at_position(self, row, col):
+        if self.is_valid_position(row, col):
+            return self.grid[row][col]
+        else:
+            return None
 
     def __getitem__(self, pos):
         row, col = pos

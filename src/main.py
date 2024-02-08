@@ -63,21 +63,8 @@ class Main:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    # Get mouse click position
-                    mouse_pos = event.pos
-
-                    # Calculate which square is clicked
-                    clicked_row = mouse_pos[1] // self.square_size # y value
-                    clicked_col = mouse_pos[0] // self.square_size # x value
-                    print(f"row = {clicked_row}, col = {clicked_col}")
+                    self.handle_mouse_click(event)
                     
-                     # Check if the clicked square has a piece on it
-                    if self.board.board[clicked_row][clicked_col].piece:
-                        # Store the clicked square's position to highlight
-                        self.highlighted_square = (clicked_row, clicked_col)
-                    else:
-                        # Optionally, clear the highlight if an empty square is clicked
-                        self.highlighted_square = None
                     
             self.screen.fill((0, 0, 0))  # Black background
 
@@ -89,6 +76,24 @@ class Main:
 
             pygame.display.flip()
     
+    def handle_mouse_click(self, event):
+        # Get mouse click position
+        mouse_pos = event.pos
+
+        # Calculate which square is clicked
+        clicked_row = mouse_pos[1] // self.square_size # y value
+        clicked_col = mouse_pos[0] // self.square_size # x value
+        print(f"row = {clicked_row}, col = {clicked_col}")
+        
+        # Check if the clicked square has a piece on it
+        if self.board.board[clicked_row][clicked_col].piece:
+            # Store the clicked square's position to highlight
+            self.highlighted_square = (clicked_row, clicked_col)
+        else:
+            # Optionally, clear the highlight if an empty square is clicked
+            self.highlighted_square = None
+            
+        
     
     def highlight_square(self, row, col):
         highlight_color_yellow = (255, 255, 0)  # Corrected to yellow
@@ -97,7 +102,7 @@ class Main:
         # Redraw the piece on the highlighted square
         square = self.board.board[row][col]
         if square.piece:   
-               
+                
             piece_image = pygame.transform.scale(square.piece.image, (self.square_size, self.square_size))
             self.screen.blit(piece_image, (col * self.square_size, row * self.square_size))
             

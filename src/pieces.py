@@ -4,6 +4,7 @@ class Piece:
     def __init__(self, color, name):
         self.color = color
         self.name = name
+        self.has_moved = False
         
         # Visuals
         self.image = pygame.image.load(f'../images/Pieces/{color}_{name}.svg').convert_alpha()
@@ -11,6 +12,8 @@ class Piece:
     def is_valid_move(self, start_pos, end_pos, board):
         # Implement move validation for the piece
         pass
+    
+
 
 class Pawn(Piece):
     def __init__(self, color):
@@ -18,23 +21,16 @@ class Pawn(Piece):
 
     def is_valid_move(self, position, board):
         valid_moves = []
-        direction = 1 if self.color == "white" else -1  # Adjust direction based on color
-        start_row = 6 if self.color == "white" else 1
+        direction = -1 if self.color == "White" else 1  # Adjust direction based on color
         row, col = position
 
-        # Move forward
-        if board[row + direction][col] == None:  # Assuming None means the square is empty
+        # Move forward one space
+        if board.is_valid_position(row + direction, col) and not board[row + direction, col].piece:
             valid_moves.append((row + direction, col))
-            # Check if it's the pawn's first move
-            if row == start_row and board[row + 2 * direction][col] == None:
-                valid_moves.append((row + 2 * direction, col))
 
-        # Capture moves
-        for dcol in [-1, 1]:
-            if 0 <= col + dcol < 8:  # Ensure the column is within bounds
-                target_square = board[row + direction][col + dcol]
-                if target_square != None and target_square.color != self.color:  # Enemy piece present
-                    valid_moves.append((row + direction, col + dcol))
+            # If it hasn't moved, consider two spaces forward
+            if not self.has_moved and board.is_valid_position(row + (2 * direction), col) and not board[row + 2 * direction, col].piece:
+                valid_moves.append((row + 2 * direction, col))
 
         return valid_moves
 
@@ -51,9 +47,26 @@ class Knight(Piece):
     def __init__(self, color):
         super().__init__(color, "Knight")
 
-    def is_valid_move(self, start_pos, end_pos, board):
-        # Implement knight-specific move logic
-        pass
+    def is_valid_move(self, position, board):
+        valid_moves = []
+        row, col = position
+        # Knight move patterns (2 in one direction, 1 in the perpendicular direction)
+        move_offsets = [
+            (-2, -1), (-2, +1),
+            (-1, -2), (-1, +2),
+            (+1, -2), (+1, +2),
+            (+2, -1), (+2, +1),
+        ]
+
+        for offset in move_offsets:
+            new_row, new_col = row + offset[0], col + offset[1]
+            if 0 <= new_row < 8 and 0 <= new_col < 8:  # Check if within the board
+                target_square = board.board[new_row][new_col]
+                # Check if the target square is empty or contains an opponent's piece
+                if not target_square.piece or target_square.piece.color != self.color:
+                    valid_moves.append((new_row, new_col))
+
+        return valid_moves
 
 class Bishop(Piece):
     def __init__(self, color):
