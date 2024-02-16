@@ -34,15 +34,6 @@ class Pawn(Piece):
 
         return valid_moves
 
-
-class Rook(Piece):
-    def __init__(self, color):
-        super().__init__(color, "Rook")
-
-    def is_valid_move(self, start_pos, end_pos, board):
-        # Implement rook-specific move logic
-        pass
-
 class Knight(Piece):
     def __init__(self, color):
         super().__init__(color, "Knight")
@@ -99,6 +90,39 @@ class Bishop(Piece):
                 step += 1
 
         return valid_moves
+
+class Rook(Piece):
+    def __init__(self, color):
+        super().__init__(color, "Rook")
+
+    def is_valid_move(self, position, board):
+        valid_moves = []
+        directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # Horizontal and vertical directions
+
+        for direction in directions:
+            step = 1
+            while True:
+                end_row = position[0] + step * direction[0]
+                end_col = position[1] + step * direction[1]
+
+                # Check bounds of the board
+                if not (0 <= end_row < len(board.board) and 0 <= end_col < len(board.board[0])):
+                    break
+
+                if board[(end_row, end_col)].piece is None:
+                    # The square is empty, add as a valid move
+                    valid_moves.append((end_row, end_col))
+                else:
+                    # Square is occupied, check if it's an opponent's piece
+                    if board[(end_row, end_col)].piece.color != self.color:
+                        valid_moves.append((end_row, end_col))
+                    # Block further moves in this direction
+                    break
+
+                step += 1
+
+        return valid_moves
+
 
 class Queen(Piece):
     def __init__(self, color):
