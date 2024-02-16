@@ -5,6 +5,7 @@ import sys
 from board import Board
 
 class Main:
+    
     def __init__(self):
         pygame.init()
         
@@ -23,6 +24,7 @@ class Main:
         self.chessboard_bg = pygame.transform.scale(self.chessboard_bg, (self.screen_width, self.screen_height))
 
         self.highlighted_square = None
+
 
     def draw_board(self):
         # Display the background image
@@ -56,6 +58,7 @@ class Main:
         if self.highlighted_square:
             self.highlight_square(*self.highlighted_square)
 
+
     def run_game(self):
         while True:
             for event in pygame.event.get():
@@ -76,6 +79,7 @@ class Main:
 
             pygame.display.flip()
     
+    
     def handle_mouse_click(self, event):
         # Get mouse click position
         mouse_pos = event.pos
@@ -85,15 +89,35 @@ class Main:
         clicked_col = mouse_pos[0] // self.square_size # x value
         print(f"row = {clicked_row}, col = {clicked_col}")
         
+        square = self.board.board[clicked_row][clicked_col]
         # Check if the clicked square has a piece on it
         if self.board.board[clicked_row][clicked_col].piece:
+            # Store the Game State of the valid moves of the select piece
+            self.valid_moves = square.piece.is_valid_move((clicked_row, clicked_col), board=self.board)
             # Store the clicked square's position to highlight
             self.highlighted_square = (clicked_row, clicked_col)
-        else:
-            # Optionally, clear the highlight if an empty square is clicked
-            self.highlighted_square = None
             
-        
+        else:
+            # Check if the clicked square is in the available moves list
+            if (clicked_row, clicked_col) in self.valid_moves:
+                # Move the piece to the new position
+                self.move_piece(self.highlighted_square, (clicked_row, clicked_col))
+                # Optionally, clear the highlight and available moves after moving
+                self.highlighted_square = None
+                self.available_moves = []
+            else:
+                # Optionally, clear the highlight if an empty square is clicked
+                self.highlighted_square = None
+            
+            
+    def move_piece(self, from_pos, to_pos):
+        # Example logic to move a piece from from_pos to to_pos
+        # You would need to implement the specifics based on your board and piece implementation
+        piece = self.board.board[from_pos[0]][from_pos[1]].piece
+        self.board.board[to_pos[0]][to_pos[1]].piece = piece
+        self.board.board[from_pos[0]][from_pos[1]].piece = None
+        print(f"Moved piece from {from_pos} to {to_pos}")
+    
     
     def highlight_square(self, row, col):
         highlight_color_yellow = (255, 255, 0)  # Corrected to yellow
@@ -108,8 +132,8 @@ class Main:
             
             # Will Highlight all of the pieces valid moves
             highlight_color_red = (255, 0, 0)
-            valid_moves = square.piece.is_valid_move((row, col), board=self.board)
-            for move in valid_moves:
+            # valid_moves = square.piece.is_valid_move((row, col), board=self.board)
+            for move in self.valid_moves:
                 move_row, move_col = move
                 pygame.draw.rect(self.screen, highlight_color_red, (move_col * self.square_size, move_row * self.square_size, self.square_size, self.square_size))
                 
