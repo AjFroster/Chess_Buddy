@@ -3,6 +3,7 @@ import sys
 
 # Custom Classes
 from board import Board
+from pieces import Pawn
 
 class Main:
     
@@ -17,6 +18,7 @@ class Main:
         pygame.display.set_caption("ChessBuddy")
         
         # Chess Setup
+        self.current_player = 'White' 
         self.board = Board()
         
         # Load chessboard background image
@@ -25,6 +27,13 @@ class Main:
 
         self.highlighted_square = None
 
+
+    def toggle_player_turn(self):
+        if self.current_player == 'White':
+            self.current_player = 'Black'
+        else:
+            self.current_player = 'White'
+    
 
     def draw_board(self):
         # Display the background image
@@ -85,38 +94,59 @@ class Main:
         mouse_pos = event.pos
 
         # Calculate which square is clicked
-        clicked_row = mouse_pos[1] // self.square_size # y value
-        clicked_col = mouse_pos[0] // self.square_size # x value
+        clicked_row = mouse_pos[1] // self.square_size  # y value
+        clicked_col = mouse_pos[0] // self.square_size  # x value
         print(f"row = {clicked_row}, col = {clicked_col}")
-        
-        square = self.board.board[clicked_row][clicked_col]
-        # Check if the clicked square has a piece on it
-        if self.board.board[clicked_row][clicked_col].piece:
-            # Store the Game State of the valid moves of the select piece
-            self.valid_moves = square.piece.is_valid_move((clicked_row, clicked_col), board=self.board)
-            # Store the clicked square's position to highlight
-            self.highlighted_square = (clicked_row, clicked_col)
-            
-        else:
+
+        # Check if a piece is currently highlighted for moving
+        if self.highlighted_square:
             # Check if the clicked square is in the available moves list
             if (clicked_row, clicked_col) in self.valid_moves:
+                destination_square = self.board.board[clicked_row][clicked_col]
+                # Check for opponent's piece in the destination square
+                if destination_square.piece and destination_square.piece.color != self.current_player:
+                    # Capture logic here: Remove the opponent's piece from the board
+                    print(f"Captured {destination_square.piece}")
+                    # Implement capturing logic here
+
                 # Move the piece to the new position
                 self.move_piece(self.highlighted_square, (clicked_row, clicked_col))
-                # Optionally, clear the highlight and available moves after moving
+                # After moving, toggle the player's turn
+                self.toggle_player_turn()
+
+                # Clear the highlight and available moves after moving
                 self.highlighted_square = None
-                self.available_moves = []
+                self.valid_moves = []
             else:
-                # Optionally, clear the highlight if an empty square is clicked
+                # Clear the highlight if an invalid move is attempted
                 self.highlighted_square = None
-            
+
+        else:
+            # If no piece is highlighted, and the clicked square has a piece of the current player
+            square = self.board.board[clicked_row][clicked_col]
+            if square.piece and square.piece.color == self.current_player:
+                # Store the valid moves of the selected piece
+                self.valid_moves = square.piece.is_valid_move((clicked_row, clicked_col), board=self.board)
+                # Store the clicked square's position to highlight
+                self.highlighted_square = (clicked_row, clicked_col)
+   
+ 
             
     def move_piece(self, from_pos, to_pos):
-        # Example logic to move a piece from from_pos to to_pos
-        # You would need to implement the specifics based on your board and piece implementation
+        # Retrieve the piece to move
         piece = self.board.board[from_pos[0]][from_pos[1]].piece
+        # Move the piece to the new position
         self.board.board[to_pos[0]][to_pos[1]].piece = piece
+        # Clear the old position
         self.board.board[from_pos[0]][from_pos[1]].piece = None
+
+        # If the piece is a Pawn, update its moved attribute
+        if isinstance(piece, Pawn) and not piece.moved:
+            piece.moved = True
+            print(f"Pawn moved to {to_pos}, moved attribute set to True")
+
         print(f"Moved piece from {from_pos} to {to_pos}")
+
     
     
     def highlight_square(self, row, col):

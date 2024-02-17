@@ -18,8 +18,10 @@ class Piece:
 class Pawn(Piece):
     def __init__(self, color):
         super().__init__(color, "Pawn")
+        self.moved = False  # Correctly initialized
 
     def is_valid_move(self, position, board):
+        print(f" self.moved = {self.moved}")  # Debugging print statement
         valid_moves = []
         direction = -1 if self.color == "White" else 1  # Adjust direction based on color
         row, col = position
@@ -29,10 +31,19 @@ class Pawn(Piece):
             valid_moves.append((row + direction, col))
 
             # If it hasn't moved, consider two spaces forward
-            if not self.has_moved and board.is_valid_position(row + (2 * direction), col) and not board[row + 2 * direction, col].piece:
+            if not self.moved and board.is_valid_position(row + (2 * direction), col) and not board[row + 2 * direction, col].piece:  # Corrected condition
                 valid_moves.append((row + 2 * direction, col))
 
+        # Diagonal capture
+        for diag in [-1, 1]:  # Check both left and right diagonals
+            if board.is_valid_position(row + direction, col + diag):
+                diag_square = board[row + direction, col + diag]
+                if diag_square.piece and diag_square.piece.color != self.color:
+                    valid_moves.append((row + direction, col + diag))
+
         return valid_moves
+
+
 
 class Knight(Piece):
     def __init__(self, color):
@@ -162,7 +173,23 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self, color):
         super().__init__(color, "King")
+        self.moved = False  # Track if the King has moved
+        self.in_check = False  # Track if the King is in check
 
     def is_valid_move(self, start_pos, end_pos, board):
-        # Implement king-specific move logic
-        pass
+        # Calculate the difference in position
+        row_diff = abs(end_pos[0] - start_pos[0])
+        col_diff = abs(end_pos[1] - start_pos[1])
+
+        # King can move exactly one square in any direction
+        if row_diff <= 1 and col_diff <= 1:
+            # Check if the target square is either empty or contains an opponent's piece
+            target_square = board.board[end_pos[0]][end_pos[1]]  # Adjusted for your board's structure
+            if target_square.piece is None or target_square.piece.color != self.color:
+                return True
+        return False
+
+
+
+
+
