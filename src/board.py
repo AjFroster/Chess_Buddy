@@ -29,8 +29,12 @@ class Board:
                 piece = None
 
                 # Place pawns
-                if y == 1: piece = Pawn("Black")
-                elif y == 6: piece = Pawn("White")
+                if y == 1:
+                    piece = Pawn("Black")
+                    piece.position = (y, x)  # Set the piece's position
+                elif y == 6:
+                    piece = Pawn("White")
+                    piece.position = (y, x)  # Set the piece's position
 
                 # Place other pieces
                 if y == 0 or y == 7:
@@ -39,8 +43,9 @@ class Board:
                               Queen(color_piece), King(color_piece), 
                               Bishop(color_piece), Knight(color_piece), Rook(color_piece)]
                     piece = pieces[x]
+                    piece.position = (y, x)  # Set the piece's position
 
-                board[y][x] = Square(x, y, color, piece)
+                board[y][x] = Square(x, y, color, piece)  # Assuming Square is correctly implemented
 
         return board
     
@@ -49,10 +54,10 @@ class Board:
     
     def get_piece_at_position(self, row, col):
         if self.is_valid_position(row, col):
-            return self.grid[row][col]
+            return self.board[row][col].piece  # Adjusted to access the piece attribute of the square
         else:
             return None
 
     def __getitem__(self, pos):
         row, col = pos
-        return self.board[row][col]
+        return self.board[row][col]  # Removed the comma, as we're returning the Square object itself
