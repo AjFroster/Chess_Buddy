@@ -36,8 +36,18 @@ class Main:
             for x, square in enumerate(row):
                 piece = square.piece
                 if piece:
-                    piece_image = pygame.transform.scale(piece.image, (self.square_size, self.square_size))
-                    self.screen.blit(piece_image, (x * self.square_size, y * self.square_size))
+                    # Calculate new dimensions (80% of the square size)
+                    new_size = int(self.square_size * 0.9)
+                    
+                    # Scale the piece image to the new size
+                    piece_image = pygame.transform.scale(piece.image, (new_size, new_size))
+                    
+                    # Calculate the offset to center the piece in the square
+                    offset = (self.square_size - new_size) // 2
+                    
+                    # Adjust the position to center the piece and draw it
+                    piece_position = (x * self.square_size + offset, y * self.square_size + offset)
+                    self.screen.blit(piece_image, piece_position)
                 
         # Highlight valid moves for the selected piece
         if self.highlighted_square and self.valid_moves:
@@ -145,8 +155,7 @@ class Main:
         button_rect = pygame.Rect(self.screen_width / 2 - 100, self.screen_height / 2 + 50, 200, 50)
         
         # Main loop for the end game screen
-        end_game = True
-        while end_game:
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -157,7 +166,7 @@ class Main:
                     if button_rect.collidepoint(mouse_pos):
                         # The button was clicked, reset the game
                         self.reset_game()
-                        end_game = False
+                        break
             
             # Drawing the end game screen
             # self.screen.fill((0, 0, 0))  # Clear the screen
@@ -178,7 +187,6 @@ class Main:
         self.current_player = 'White'  # Reset the player turn
         # Add any other necessary state resets here
         self.run_game()
-
 
     def highlight_square(self, row, col, color=(255, 255, 0)):  # Default color is yellow for selection
         pygame.draw.rect(self.screen, color, (col*self.square_size, row*self.square_size, self.square_size, self.square_size), 5)
