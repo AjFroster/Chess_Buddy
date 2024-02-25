@@ -6,6 +6,7 @@ class Piece:
         self.name = name
         self.has_moved = False
         self.position = None  # Add this line to track the piece's position
+        self.value = None
         
         # Visuals
         self.image = pygame.image.load(f'../images/Pieces/{color}_{name}.svg').convert_alpha()
@@ -15,14 +16,13 @@ class Piece:
         pass
     
 
-
 class Pawn(Piece):
     def __init__(self, color):
         super().__init__(color, "Pawn")
-        #self.moved = False  # Correctly initialized
+        self.value = 1
 
     def get_valid_moves(self, position, board):
-        print(f" self.has_moved = {self.has_moved}")  # Debugging print statement
+        #print(f" self.has_moved = {self.has_moved}")  # Debugging print statement
         valid_moves = []
         direction = -1 if self.color == "White" else 1  # Adjust direction based on color
         row, col = position
@@ -47,6 +47,7 @@ class Pawn(Piece):
 class Knight(Piece):
     def __init__(self, color):
         super().__init__(color, "Knight")
+        self.value = 3
 
     def get_valid_moves(self, position, board):
         valid_moves = []
@@ -72,6 +73,7 @@ class Knight(Piece):
 class Bishop(Piece):
     def __init__(self, color):
         super().__init__(color, "Bishop")
+        self.value = 3
 
     def get_valid_moves(self, position, board):
         valid_moves = []
@@ -104,6 +106,7 @@ class Bishop(Piece):
 class Rook(Piece):
     def __init__(self, color):
         super().__init__(color, "Rook")
+        self.value = 5
         self.moved = False
 
     def get_valid_moves(self, position, board):
@@ -137,6 +140,7 @@ class Rook(Piece):
 class Queen(Piece):
     def __init__(self, color):
         super().__init__(color, "Queen")
+        self.value = 9
 
     def get_valid_moves(self, position, board):
         valid_moves = []
@@ -172,6 +176,7 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self, color):
         super().__init__(color, "King")
+        self.value = 20
         # Assuming 'moved' tracks if the King has ever moved, for castling or other logic
         # self.moved = False
 
@@ -218,7 +223,7 @@ class King(Piece):
             return False, None  # The king cannot castle, no end position
 
         # Define the path and end position for kingside castling based on the king's color
-        if self.color == 'white':
+        if self.color == 'White':
             rook_position = (7, 7)  # Assuming H1 for white's rook in traditional setup
             path = [(7, 5), (7, 6)]  # Squares the king passes through for white
             king_end_position = (7, 6)  # G1, white king's ending position after castling
@@ -248,7 +253,7 @@ class King(Piece):
             return False, None  # The king cannot castle, no end position
 
         # Define the path and end position for queenside castling based on the king's color
-        if self.color == 'white':
+        if self.color == 'White':
             rook_position = (7, 0)  # Assuming A1 for white's rook in traditional setup
             path = [(7, 1), (7, 2), (7, 3)]  # Squares the king passes through for white
             king_end_position = (7, 2)  # C1, white king's ending position after castling

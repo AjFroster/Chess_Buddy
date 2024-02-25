@@ -58,6 +58,13 @@ class Main:
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_mouse_click(event)
+                
+            # End Game Logic  
+            if self.board.is_king_in_check(self.current_player):
+                if self.board.is_checkmate(self.current_player):
+                    self.display_checkmate_popup(self.current_player)
+                    break
+      
             
             self.screen.fill((0, 0, 0))
             self.draw_board()
@@ -83,7 +90,7 @@ class Main:
         else:
             square = self.board.board[clicked_row][clicked_col]
             if square.piece and square.piece.color == self.current_player:
-                print("selectec the piece = "+square.piece.name)
+                print("selected the piece = "+square.piece.name)
                 # Highlight the clicked square and calculate valid moves
                 self.highlighted_square = clicked_pos
                 # Assume a method exists on the piece to calculate its valid moves
@@ -91,6 +98,7 @@ class Main:
                 # This method should return a list of tuples representing valid move positions
 
     def move_piece(self, from_pos, to_pos):
+                
         piece = self.board.board[from_pos[0]][from_pos[1]].piece
         if piece:
             # Update the piece's position and mark it as having moved
@@ -102,19 +110,75 @@ class Main:
             self.board.board[from_pos[0]][from_pos[1]].piece = None
 
             print(f"Moved piece from {from_pos} to {to_pos}")
+            
+            # Check for castling (King moving more than one square)
+            if isinstance(piece, King) and abs(to_pos[1] - from_pos[1]) > 1:
+                # Determine castling direction
+                is_kingside = to_pos[1] > from_pos[1]
+                row = from_pos[0]
 
+                if is_kingside:
+                    # Move the kingside rook
+                    rook_from_pos = (row, 7)  # Assuming the rook is on the H file
+                    rook_to_pos = (row, 5)  # Position next to the king after castling
+                else:
+                    # Move the queenside rook
+                    rook_from_pos = (row, 0)  # Assuming the rook is on the A file
+                    rook_to_pos = (row, 3)  # Position next to the king after castling
 
+                # Move the rook
+                rook = self.board.board[rook_from_pos[0]][rook_from_pos[1]].piece
+                if rook:
+                    self.board.board[rook_to_pos[0]][rook_to_pos[1]].piece = rook
+                    self.board.board[rook_from_pos[0]][rook_from_pos[1]].piece = None
+                    rook.position = rook_to_pos
+                    rook.has_moved = True
+                    print(f"Moved rook from {rook_from_pos} to {rook_to_pos} for castling")
+ 
+    def display_checkmate_popup(self, winner):
+        font = pygame.font.Font(None, 74)  # Use a suitable font size
+        text = font.render(f"Checkmate! {winner} wins!", 1, (255, 0, 0))
+        text_rect = text.get_rect(center=(self.screen_width / 2, self.screen_height / 2 - 50))
+        
+        # Button dimensions and properties
+        button_text = pygame.font.Font(None, 50).render("Play Again", True, (255, 255, 255))
+        button_rect = pygame.Rect(self.screen_width / 2 - 100, self.screen_height / 2 + 50, 200, 50)
+        
+        # Main loop for the end game screen
+        end_game = True
+        while end_game:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return  # Exit the function to prevent further code execution
+                    
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos  # Gets the mouse position
+                    if button_rect.collidepoint(mouse_pos):
+                        # The button was clicked, reset the game
+                        self.reset_game()
+                        end_game = False
+            
+            # Drawing the end game screen
+            # self.screen.fill((0, 0, 0))  # Clear the screen
+            pygame.draw.rect(self.screen, (0, 0, 0), text_rect.inflate(20, 20))  # Background for text
+            self.screen.blit(text, text_rect)
+            
+            # Drawing the button
+            pygame.draw.rect(self.screen, (0, 128, 0), button_rect)  # Button background
+            button_text_rect = button_text.get_rect(center=button_rect.center)
+            self.screen.blit(button_text, button_text_rect)
+            
+            pygame.display.flip()
 
-    def find_king_position(self, color):
-        for y, row in enumerate(self.board.board):
-            for x, square in enumerate(row):
-                if isinstance(square.piece, King) and square.piece.color == color:
-                    return (y, x)
-        return None
+    def reset_game(self):
+        # Reset or reinitialize the game state to start a new game
+        # This method should reset the board, the player turn, and any other necessary state
+        self.board = Board()  # Reinitialize the board or reset its state
+        self.current_player = 'White'  # Reset the player turn
+        # Add any other necessary state resets here
+        self.run_game()
 
-    def check_for_check(self):
-        # This method should implement the logic to check if the king is in check
-        return False
 
     def highlight_square(self, row, col, color=(255, 255, 0)):  # Default color is yellow for selection
         pygame.draw.rect(self.screen, color, (col*self.square_size, row*self.square_size, self.square_size, self.square_size), 5)
