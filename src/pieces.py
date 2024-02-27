@@ -186,10 +186,13 @@ class King(Piece):
 
         # Directions the King can move: vertical, horizontal, and diagonal
         directions = [(-1, -1), (-1, 0), (-1, 1),
-                      (0, -1),         (0, 1),
-                      (1, -1), (1, 0), (1, 1)]
+                    (0, -1),         (0, 1),
+                    (1, -1), (1, 0), (1, 1)]
 
         valid_moves = []
+
+        # Determine the opponent's color
+        opponent_color = "Black" if self.color == "White" else "White"
 
         # Basic King Movements
         for d_row, d_col in directions:
@@ -200,21 +203,24 @@ class King(Piece):
                 destination_square = board.board[target_row][target_col]
                 # Check if the destination square is either empty or contains an opponent's piece
                 if destination_square.piece is None or destination_square.piece.color != self.color:
-                    valid_moves.append((target_row, target_col))
-        
+                    # Before adding to valid moves, check if the square is under opponent control
+                    if not board.is_square_under_opponent_control((target_row, target_col), opponent_color):
+                        valid_moves.append((target_row, target_col))
+
         # Check for the ability to castle
         valid_king_side_castle, king_side_castle_position = self.can_castle_kingside(board)    
         valid_queen_side_castle, queen_side_castle_position = self.can_castle_queenside(board) 
-          
-        if valid_king_side_castle:
+
+        # Include castle moves if they are not under opponent control
+        if valid_king_side_castle and not board.is_square_under_opponent_control(king_side_castle_position, opponent_color):
             valid_moves.append(king_side_castle_position)
-            
-        if valid_queen_side_castle:
+
+        if valid_queen_side_castle and not board.is_square_under_opponent_control(queen_side_castle_position, opponent_color):
             valid_moves.append(queen_side_castle_position)
-        
-        # print(', '.join(f"({row}, {col})" for row, col in valid_moves))
 
         return valid_moves
+
+
 
     def can_castle_kingside(self, board):
         # Assuming 'board' is an object with attributes/methods to check for pieces and moves

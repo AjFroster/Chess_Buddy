@@ -18,6 +18,9 @@ class Square:
 class Board:
     def __init__(self):
         self.board = self.setup_board()
+        self.white_moves = None
+        self.black_moves = None
+        self.update_attacked_squares()
 
     def setup_board(self):
         board = [[None for _ in range(8)] for _ in range(8)]
@@ -48,6 +51,11 @@ class Board:
                 board[y][x] = Square(x, y, color, piece)  # Assuming Square is correctly implemented
 
         return board
+    
+    def update_attacked_squares(self):
+        # Updates the squares attacked by white and black
+        self.white_moves = self.get_attacked_squares('White')
+        self.black_moves = self.get_attacked_squares('Black')
     
     def is_valid_position(self, row, col):
         return 0 <= row < 8 and 0 <= col < 8
@@ -129,4 +137,25 @@ class Board:
             piece.position = from_pos
         if captured_piece:
             captured_piece.position = to_pos
+            
+    def is_square_under_opponent_control(self, square, opponent_color):
+        # Assuming `opponent_color` is already determined correctly as either 'White' or 'Black'
+        attacked_squares = self.get_attacked_squares(opponent_color)
+        return square in attacked_squares
+   
+    def get_attacked_squares(self, color):
+        attacked_squares = set()
+        for row in range(8):
+            for col in range(8):
+                piece = self.get_piece_at_position(row, col)
+                #print(f"piece = {piece.name}")
+                if piece and piece.color == color:
+                    # Assuming get_valid_moves_for_piece_at_position is implemented and returns all attack moves
+                    valid_moves = piece.get_valid_moves((row, col),self)
+                    for move in valid_moves:
+                        # Add the target square of the move to the set of attacked squares
+                        # You might need to adjust the logic depending on how moves are represented
+                        attacked_squares.add(move)
+        return attacked_squares
+
 
